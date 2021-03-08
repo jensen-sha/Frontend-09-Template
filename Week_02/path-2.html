@@ -1,0 +1,113 @@
+<!--
+ * @Author: Sha Jun
+ * @Date: 2021-03-04 08:57:58
+ * @LastEditTime: 2021-03-08 10:56:50
+ * @LastEditors: Please set LastEditors
+ * @Description: In User Settings Edit
+ * @FilePath: \Frontend-09-Template\Week_02\path-2.html
+-->
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>2. 寻路 | 广度优先搜索</title>
+
+    <style>
+      .cell {
+        width: 6px;
+        height: 6px;
+        border-right: 1px solid white;
+        border-bottom: 1px solid white;
+        background-color: #ddd;
+      }
+
+      #container {
+        display: flex;
+        width: 700px;
+        flex-wrap: wrap;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="container"></div>
+    <button onclick="localStorage['map'] = JSON.stringify(map)">save</button>
+    <button onclick="delete localStorage.map;location.reload();">clear</button>
+
+    <script>
+      // 存储地图初始值
+      let map = localStorage["map"]
+        ? JSON.parse(localStorage["map"])
+        : Array(10000).fill(0);
+
+      // 获取 container
+      let container = document.getElementById("container");
+
+      // 两层 for 循环
+      for (let y = 0; y < 100; y++) {
+        for (let x = 0; x < 100; x++) {
+          let cell = document.createElement("div");
+          cell.classList.add("cell");
+
+          if (map[100 * y + x] == 1) cell.style.backgroundColor = "black";
+
+          // 编辑地图
+          cell.addEventListener("mousemove", () => {
+            if (mousedown) {
+              if (clear) {
+                cell.style.backgroundColor = "";
+                map[100 * y + x] = 0;
+              } else {
+                cell.style.backgroundColor = "black";
+                map[100 * y + x] = 1;
+              }
+            }
+          });
+          container.appendChild(cell);
+        }
+      }
+
+      let mousedown = false;
+      let clear = false;
+
+      document.addEventListener("mousedown", (e) => {
+        mousedown = true;
+        clear = e.which === 3;
+      });
+      document.addEventListener("mouseup", () => (mousedown = false));
+      document.addEventListener("contextmenu", (e) => e.preventDefault());
+
+      function path(map, start, end) {
+        // 所有搜索算法的差异，就在于这个 queue 集合里面
+        // 先进先出，一边进一边出
+        // shift 和 push 作为一个队列的入队和出队的两个方法
+        // 一直到这个队列为空为止，这就是广度优先搜索的主要内容
+        let queue = [start];
+
+        // insert 是个入队的逻辑
+        function insert(x, y) {
+          // 以下两个是处理边缘的 case
+          if (x < 0 || x >= 100 || y < 0 || y >= 100) return;
+          if (map[y * 100 + x]) return;
+
+          map[y * 100 + x] = 2;
+          queue.push([x, y]);
+        }
+
+        while (queue.length) {
+          let [x, y] = queue.shift();
+          console.log(x, y);
+          if (x === end[0] && y === end[1]) {
+            return true;
+          }
+          insert(x - 1, y); //左
+          insert(x, y - 1); //右
+          insert(x + 1, y); //上
+          insert(x, y + 1); //下
+        }
+        return false;
+      }
+    </script>
+  </body>
+</html>
